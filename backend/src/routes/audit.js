@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { auditUrl } from '../analyzer/index.js'
 import { generateRecommendations } from '../ai/recommendations.js'
 import { getOrCreateUser, incrementAuditCount, saveAudit, getUserAudits, getAudit } from '../db/index.js'
+import { generatePdfReport } from '../pdf/report.js'
 
 const router = Router()
 
@@ -65,6 +66,34 @@ router.get('/audit/:id', (req, res) => {
   const audit = getAudit(parseInt(req.params.id))
   if (!audit) return res.status(404).json({ error: 'Not found' })
   res.json({ ...audit, result_json: JSON.parse(audit.result_json) })
+})
+
+// GET /api/audit/:id/pdf?brandName=...&brandColor=... — white-label PDF отчёт
+router.get('/audit/:id/pdf', async (req, res) => {
+  const audit = getAudit(parseInt(req.params.id))
+  if (!audit) return res.status(404).json({ error: 'Not found' })
+
+  const { brandName, brandColor } = req.query
+  const result = JSON.parse(audit.result_json)
+
+  try {
+    const pdf = await generatePdfReport({
+      url: audit.url,
+      score: audit.score,
+      checks: result.checks,
+      recommendations: audit.ai_recommendations,
+      brandName: brandName || undefined,
+      brandColor: brandColor || undefined,
+    })
+
+    const filename = `seo-report-${audit.id}.pdf`
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(pdf)
+  } catch (err) {
+    console.error('PDF generation error:', err)
+    res.status(500).json({ error: 'PDF generation failed' })
+  }
 })
 
 export default router
