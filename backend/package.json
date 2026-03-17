@@ -1,0 +1,18 @@
+{
+  "name": "seobot-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "migrate": "node migrations/run.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.0",
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.18.2",
+    "grammy": "^1.31.0",
+    "puppeteer": "^22.0.0"
+  }
+}

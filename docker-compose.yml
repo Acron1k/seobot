@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./backend
+    container_name: seobot-backend
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+    volumes:
+      - seobot-data:/data
+    env_file: .env
+    environment:
+      DATABASE_PATH: /data/seobot.db
+    shm_size: '256m'
+
+volumes:
+  seobot-data:
